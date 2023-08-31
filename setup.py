@@ -14,6 +14,6 @@ setup(
     author_email='rwielema@gmail.com',
     url='rwielema',
     packages=find_packages(),
-    requires=['jinja2', 'pandas', 'snowflake-connector-python', 'snowflake-connector-python[pandas]',
+    install_requires=['jinja2', 'pandas', 'snowflake-connector-python', 'snowflake-connector-python[pandas]',
               'snowflake-snowpark-python']
 )
