@@ -16,5 +16,5 @@ setup(
     packages=find_packages(),
     install_requires=['jinja2', 'pandas', 'snowflake-connector-python', 'snowflake-connector-python[pandas]',
                       'snowflake-snowpark-python'],
-    include_package_data=True
+    package_data={'pysnowflake': ['templates/*.sql']}
 )
