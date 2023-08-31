@@ -1,2 +1,2 @@
-from sf.sf import Snowflake
+from sf import Snowflake
 
