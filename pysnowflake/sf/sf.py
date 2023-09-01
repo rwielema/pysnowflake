@@ -1,6 +1,7 @@
 import atexit
 import json
 import re
+from typing import Union
 
 import pandas as pd
 import snowflake.connector
@@ -104,7 +105,7 @@ class Snowflake:
             query = f'CREATE OR REPLACE DATABASE {database_name}'
         return self.query(query, return_type='log')
 
-    def query(self, query: str, return_type: str = None) -> pd.DataFrame | str | None:
+    def query(self, query: str, return_type: str = None) -> Union[pd.DataFrame | str | None]:
         cur = self.cursor
         if query.strip().endswith('.sql'):
             with open(query, 'r') as f:

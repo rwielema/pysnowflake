@@ -1,2 +1,2 @@
-from sf import Snowflake
+from pysnowflake.sf import Snowflake
 
