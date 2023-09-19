@@ -14,12 +14,6 @@ class Snowflake:
     def __init__(self, **kwargs):
         self._con = None
         self._con_settings = kwargs
-        if warehouse := self._con_settings.get('warehouse'):
-            self._current_warehouse = warehouse
-        if database := self._con_settings.get('database'):
-            self._current_database = database
-        if schema := self._con_settings.get('schema'):
-            self._current_schema = schema
 
         self.user = User(self)
         self.role = Role(self)
@@ -40,6 +34,22 @@ class Snowflake:
     def cursor(self) -> snowflake.connector.cursor:
         return self.con.cursor()
 
+    @property
+    def database(self):
+        return self._get_current(SnowflakeObjectType.DATABASE)
+
+    @property
+    def warehouse(self):
+        return self._get_current(SnowflakeObjectType.WAREHOUSE)
+
+    @property
+    def schema(self):
+        return self._get_current(SnowflakeObjectType.SCHEMA)
+
+    def _get_current(self, object_type: SnowflakeObjectType):
+        objects = self.query(f'SHOW {object_type}S', return_type='list')
+        return [obj for obj in objects if obj[3] == 'Y'][0][1]
+
     def _create_from_json(self, file_path: str, object_type: SnowflakeObjectType = SnowflakeObjectType.TABLE):
         with open(file_path, 'r') as f:
             data = json.load(f)
@@ -56,8 +66,10 @@ class Snowflake:
     def create_task_from_json(self, file_path: str) -> str:
         return self._create_from_json(file_path, object_type=SnowflakeObjectType.TASK)
 
-    def insert_data(self, table_name: str, data: pd.DataFrame) -> None:
-        _, _, _, output = write_pandas(self.con, data, table_name)
+    def insert_data(self, table_name: str, data: pd.DataFrame, database: str = None, schema: str = None) -> None:
+        database = database or self.database
+        schema = schema or self.schema
+        _, _, _, output = write_pandas(self.con, data, table_name, database, schema)
         return output
 
     def get_data(self, query: str) -> pd.DataFrame:
@@ -99,13 +111,10 @@ class Snowflake:
 
     def use(self, warehouse: str = None, database: str = None, schema: str = None):
         if warehouse:
-            self._current_warehouse = warehouse
             self.query(f'USE WAREHOUSE {warehouse}')
         if database:
-            self._current_database = database
             self.query(f'USE DATABASE {database}')
         if schema:
-            self._current_schema = schema
             self.query(f'USE SCHEMA {schema}')
 
 
