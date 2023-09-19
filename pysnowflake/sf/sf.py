@@ -48,22 +48,6 @@ class Snowflake:
         self._current_warehouse = warehouses[warehouses['is_default'] == 'Y']['name']
         return self._current_warehouse
 
-    @property
-    def database(self) -> str:
-        if not self._con:
-            return self._current_database
-        databases = self.query('SHOW DATABASES', return_type='df')
-        self._current_database = [databases['is_default'] == 'Y']['name']
-        return self._current_database
-
-    @property
-    def schema(self) -> str:
-        if not self._con:
-            return self._current_schema
-        schemas = self.query('SHOW SCHEMAS', return_type='df')
-        self._current_schema = [schemas['is_default'] == 'Y']['name']
-        return self._current_schema
-
     def _create_from_json(self, file_path: str, object_type: SnowflakeObjectType = SnowflakeObjectType.TABLE):
         with open(file_path, 'r') as f:
             data = json.load(f)
@@ -81,7 +65,7 @@ class Snowflake:
         return self._create_from_json(file_path, object_type=SnowflakeObjectType.TASK)
 
     def insert_data(self, table_name: str, data: pd.DataFrame) -> None:
-        _, _, _, output = write_pandas(self._con, data, table_name, self.database, self.schema)
+        _, _, _, output = write_pandas(self._con, data, table_name)
         return output
 
     def get_data(self, query: str) -> pd.DataFrame:
