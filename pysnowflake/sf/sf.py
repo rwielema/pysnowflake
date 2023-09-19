@@ -40,14 +40,6 @@ class Snowflake:
     def cursor(self) -> snowflake.connector.cursor:
         return self.con.cursor()
 
-    @property
-    def warehouse(self) -> str:
-        if not self._con:
-            return self._current_warehouse
-        warehouses = self.query('SHOW WAREHOUSES', return_type='df')
-        self._current_warehouse = warehouses[warehouses['is_default'] == 'Y']['name']
-        return self._current_warehouse
-
     def _create_from_json(self, file_path: str, object_type: SnowflakeObjectType = SnowflakeObjectType.TABLE):
         with open(file_path, 'r') as f:
             data = json.load(f)
@@ -65,7 +57,7 @@ class Snowflake:
         return self._create_from_json(file_path, object_type=SnowflakeObjectType.TASK)
 
     def insert_data(self, table_name: str, data: pd.DataFrame) -> None:
-        _, _, _, output = write_pandas(self._con, data, table_name)
+        _, _, _, output = write_pandas(self.con, data, table_name)
         return output
 
     def get_data(self, query: str) -> pd.DataFrame:
